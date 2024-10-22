@@ -1,0 +1,6 @@
+[package]
+name = "shining-a-light-on-async-internals"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
