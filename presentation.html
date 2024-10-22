@@ -462,12 +462,11 @@ font-size: 230%;
 <ol type="1">
 <li class="fragment"><strong>right-sized tasks</strong>: less memory
 consumption</li>
-<li class="fragment"><strong>fewer context switches</strong>: switching
-between tasks cheaper than between threads</li>
+<li class="fragment"><strong>cheaper context switches</strong>: tasks
+cheaper than threads</li>
 <li class="fragment"><strong>zero-cost abstractions</strong>:
-C-friendly, state machines</li>
+FFI-friendly + state machines <!-- - Efficient waiting --></li>
 </ol></li>
-<li class="fragment">Efficient waiting</li>
 </ul>
 </section>
 <section id="zero-cost-abstractions" class="slide level2">
@@ -475,7 +474,7 @@ C-friendly, state machines</li>
 <ul>
 <li class="fragment"><p>Rust favors abstractions at no
 <em>additional</em> costs</p></li>
-<li class="fragment"><p>which includes FFI:</p>
+<li class="fragment"><p>including FFI:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">unsafe</span> <span class="op">{</span> <span class="pp">libc::</span>puts(<span class="st">&quot;Hello</span><span class="sc">\0</span><span class="st">&quot;</span><span class="op">.</span>as_ptr() <span class="kw">as</span> <span class="op">*</span><span class="kw">const</span> <span class="dt">i8</span>) <span class="op">};</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div></li>
@@ -494,10 +493,10 @@ runtime</p>
 <ul>
 <li class="fragment">mostly fine, but “limited” scaling</li>
 </ul></li>
-<li class="fragment">coroutines (cf. Python’s <code>yield</code>)
+<li class="fragment">coroutines (<code>yield</code> keyword)
 <ul>
 <li class="fragment">take turns when blocked</li>
-<li class="fragment">keep state in between</li>
+<li class="fragment">keep state in between suspensions</li>
 </ul></li>
 </ul>
 </section>
@@ -508,6 +507,9 @@ runtime</p>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    sleep(<span class="pp">Duration::</span>from_secs(<span class="dv">1</span>))<span class="op">.</span><span class="kw">await</span><span class="op">;</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="pp">println!</span>(<span class="st">&quot;Bye!&quot;</span>)<span class="op">;</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+</section>
+<section class="slide level2">
+
 <p>returns something like…</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">trait</span> <span class="bu">Future</span> <span class="op">{</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">type</span> Output<span class="op">;</span></span>
@@ -519,7 +521,7 @@ runtime</p>
 
 <p>where <code>await</code> marks a <em>suspension point</em>, which is
 backed by…</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> GreetFutureStateMachine <span class="op">{</span></span>
+<div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> GreetFutureStateMachine <span class="op">{</span> <span class="co">// Compiler-provided</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    Init<span class="op">,</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// `println!(&quot;Hi!&quot;);`</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    Wait1(SleepFut <span class="co">/* `sleep(Duration::from_secs(1))` */</span>)<span class="op">,</span></span>
@@ -530,26 +532,32 @@ backed by…</p>
 </section>
 <section class="slide level2">
 
-<div class="sourceCode" id="cb5"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span> <span class="bu">Future</span> <span class="cf">for</span> GreetFutureStateMachine <span class="op">{</span></span>
+<div class="sourceCode" id="cb5"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span> <span class="bu">Future</span> <span class="cf">for</span> GreetFutureStateMachine <span class="op">{</span> <span class="co">// Compiler-provided</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">type</span> Output <span class="op">=</span> ()<span class="op">;</span> <span class="co">// No return value</span></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">fn</span> poll(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">-&gt;</span> Poll<span class="op">&lt;</span><span class="dt">Self</span><span class="pp">::</span>Output<span class="op">&gt;</span> <span class="op">{</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">match</span> <span class="op">*</span><span class="kw">self</span> <span class="op">{</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>            <span class="dt">Self</span><span class="pp">::</span>Init <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                <span class="pp">println!</span>(<span class="st">&quot;Hi!&quot;</span>)<span class="op">;</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                <span class="op">*</span><span class="kw">self</span> <span class="op">=</span> <span class="dt">Self</span><span class="pp">::</span>Wait1(sleep(<span class="pp">Duration::</span>from_secs(<span class="dv">1</span>)))<span class="op">;</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                <span class="pp">Poll::</span>Pending</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>            <span class="dt">Self</span><span class="pp">::</span>Wait1(sf) <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>                sf<span class="op">.</span>poll(cx)<span class="op">?;</span> <span class="co">// Check if ready (fake syntax)</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                <span class="pp">println!</span>(<span class="st">&quot;Bye!&quot;</span>)<span class="op">;</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>                <span class="op">*</span><span class="kw">self</span> <span class="op">=</span> <span class="dt">Self</span><span class="pp">::</span>Done<span class="op">;</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>                <span class="pp">Poll::</span>Ready(())</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>            <span class="dt">Self</span><span class="pp">::</span>Done <span class="op">=&gt;</span> <span class="pp">panic!</span>(<span class="st">&quot;Contract violation&quot;</span>)<span class="op">,</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>      <span class="pp">todo!</span>(<span class="st">&quot;next slide...&quot;</span>)<span class="op">;</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+</section>
+<section class="slide level2">
+
+<div class="sourceCode" id="cb6"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> poll(<span class="op">&amp;</span><span class="kw">mut</span> <span class="kw">self</span>) <span class="op">-&gt;</span> Poll<span class="op">&lt;</span><span class="dt">Self</span><span class="pp">::</span>Output<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">match</span> <span class="op">*</span><span class="kw">self</span> <span class="op">{</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Self</span><span class="pp">::</span>Init <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>            <span class="pp">println!</span>(<span class="st">&quot;Hi!&quot;</span>)<span class="op">;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>            <span class="op">*</span><span class="kw">self</span> <span class="op">=</span> <span class="dt">Self</span><span class="pp">::</span>Wait1(sleep(<span class="pp">Duration::</span>from_secs(<span class="dv">1</span>)))<span class="op">;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>            <span class="pp">Poll::</span>Pending</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Self</span><span class="pp">::</span>Wait1(sf) <span class="op">=&gt;</span> <span class="op">{</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            sf<span class="op">.</span>poll(cx)<span class="op">?;</span> <span class="co">// Check if underlying is ready (fake syntax)</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>            <span class="pp">println!</span>(<span class="st">&quot;Bye!&quot;</span>)<span class="op">;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            <span class="op">*</span><span class="kw">self</span> <span class="op">=</span> <span class="dt">Self</span><span class="pp">::</span>Done<span class="op">;</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>            <span class="pp">Poll::</span>Ready(())</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Self</span><span class="pp">::</span>Done <span class="op">=&gt;</span> <span class="pp">panic!</span>(<span class="st">&quot;Contract violation&quot;</span>)<span class="op">,</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </section></section>
 <section id="fewer-context-switches" class="title-slide slide level1">
 <h1>Fewer context switches</h1>
@@ -582,6 +590,7 @@ wrong choice anyway</li>
 <li class="fragment">vs. <em>stackful</em> coroutines (e.g. Goroutines ≥
 8 KB)</li>
 </ul></li>
+<li class="fragment">usual drop semantics</li>
 </ul>
 </section>
 <section class="slide level2">
@@ -591,6 +600,15 @@ wrong choice anyway</li>
 <p>Copyright <a href="https://pkolaczk.github.io/memory-consumption-of-async/">Piotr
 Kołaczkowski</a></p>
 </section></section>
+<section id="summary" class="title-slide slide level1">
+<h1>Summary</h1>
+<ol type="1">
+<li class="fragment">Right-sized tasks: ✅</li>
+<li class="fragment">Cheaper context switches: 🤷‍♀️</li>
+<li class="fragment">Zero-cost FFI: 💡</li>
+</ol>
+</section>
+
 <section id="thanks" class="title-slide slide level1">
 <h1>Thanks!</h1>
 <p>Thank you for coming to my Ted talk.</p>

@@ -15,14 +15,14 @@ theme: dracula
 
 - Performance!
   1. **right-sized tasks**: less memory consumption
-  2. **fewer context switches**: switching between tasks cheaper than between threads
-  3. **zero-cost abstractions**: C-friendly, state machines
-- Efficient waiting
+  2. **cheaper context switches**: tasks cheaper than threads
+  3. **zero-cost abstractions**: FFI-friendly + state machines
+<!-- - Efficient waiting -->
 
 ## Zero-cost abstractions
 
 - Rust favors abstractions at no _additional_ costs
-- which includes FFI:
+- including FFI:
 
     ```rust
     fn main() {
@@ -37,9 +37,9 @@ theme: dracula
 - ~~green threads~~
 - native threads
   - mostly fine, but "limited" scaling
-- coroutines (cf. Python's `yield`)
+- coroutines (`yield` keyword)
   - take turns when blocked
-  - keep state in between
+  - keep state in between suspensions
 
 ## State machines
 
@@ -50,6 +50,8 @@ async fn greet() {
     println!("Bye!");
 }
 ```
+
+---
 
 returns something like...
 
@@ -66,7 +68,7 @@ pub trait Future {
 where `await` marks a _suspension point_, which is backed by...
 
 ```rust
-enum GreetFutureStateMachine {
+enum GreetFutureStateMachine { // Compiler-provided
     Init,
     // `println!("Hi!");`
     Wait1(SleepFut /* `sleep(Duration::from_secs(1))` */),
@@ -80,24 +82,32 @@ which can be driven forward by `poll`ing...
 ---
 
 ```rust
-impl Future for GreetFutureStateMachine {
+impl Future for GreetFutureStateMachine { // Compiler-provided
     type Output = (); // No return value
 
     fn poll(&mut self) -> Poll<Self::Output> {
-        match *self {
-            Self::Init => {
-                println!("Hi!");
-                *self = Self::Wait1(sleep(Duration::from_secs(1)));
-                Poll::Pending
-            }
-            Self::Wait1(sf) => {
-                sf.poll(cx)?; // Check if ready (fake syntax)
-                println!("Bye!");
-                *self = Self::Done;
-                Poll::Ready(())
-            }
-            Self::Done => panic!("Contract violation"),
+      todo!("next slide...");
+    }
+}
+```
+
+---
+
+```rust
+fn poll(&mut self) -> Poll<Self::Output> {
+    match *self {
+        Self::Init => {
+            println!("Hi!");
+            *self = Self::Wait1(sleep(Duration::from_secs(1)));
+            Poll::Pending
         }
+        Self::Wait1(sf) => {
+            sf.poll(cx)?; // Check if underlying is ready (fake syntax)
+            println!("Bye!");
+            *self = Self::Done;
+            Poll::Ready(())
+        }
+        Self::Done => panic!("Contract violation"),
     }
 }
 ```
@@ -116,6 +126,7 @@ impl Future for GreetFutureStateMachine {
 
 - `GreetFutureStateMachine`: *exactly* as much state as required as they're *stackless*
   - vs. *stackful* coroutines (e.g. Goroutines ≥ 8 KB)
+- usual drop semantics
 
 ---
 
@@ -124,6 +135,12 @@ Spawning 1 million tasks (sleep 10)
 ![](./static/piotr-kołaczkowski-memory-consumption-of-async.png)
 
 Copyright [Piotr Kołaczkowski](https://pkolaczk.github.io/memory-consumption-of-async/)
+
+# Summary
+
+1. Right-sized tasks: ✅
+2. Cheaper context switches: 🤷‍♀️
+3. Zero-cost FFI: 💡
 
 # Thanks!
 
