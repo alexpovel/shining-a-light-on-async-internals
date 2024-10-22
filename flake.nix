@@ -19,7 +19,13 @@
             cargo-watch
             gnumake
             pandoc
+            qrencode
           ];
+
+          shellHook = ''
+            # Force Apple Clang over Nix-provided, which can fail compilations (`liconv` missing)
+            export PATH="/usr/bin/:$PATH"
+          '';
         };
       }
     );
