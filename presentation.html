@@ -445,6 +445,7 @@ font-size: 230%;
   <p class="date">October 30, 2024</p>
 </section>
 
+<section>
 <section id="whoami" class="title-slide slide level1">
 <h1><code>$ whoami</code></h1>
 <ul>
@@ -453,7 +454,21 @@ font-size: 230%;
 <li class="fragment">today, also use Rust at my work at Cloudflare</li>
 </ul>
 </section>
-
+<section id="refresher" class="slide level2">
+<h2>Refresher</h2>
+<ul>
+<li class="fragment">Rust provides fundamental types and concepts for
+async</li>
+<li class="fragment">but <strong>no runtime</strong>
+<ul>
+<li class="fragment">C#, Python, JavaScript ship with one</li>
+<li class="fragment">tokio is most popular for Rust</li>
+<li class="fragment">many others exist</li>
+</ul></li>
+<li class="fragment">the <em>concept</em> of async is independent of
+threading</li>
+</ul>
+</section></section>
 <section>
 <section id="why-does-async-exist" class="title-slide slide level1">
 <h1>Why does async exist?</h1>
@@ -550,7 +565,7 @@ backed by…</p>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>            <span class="pp">Poll::</span>Pending</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Self</span><span class="pp">::</span>Wait1(sf) <span class="op">=&gt;</span> <span class="op">{</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            sf<span class="op">.</span>poll(cx)<span class="op">?;</span> <span class="co">// Check if underlying is ready (fake syntax)</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            sf<span class="op">.</span>poll()<span class="op">?;</span> <span class="co">// Check if underlying is ready (fake syntax)</span></span>
 <span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>            <span class="pp">println!</span>(<span class="st">&quot;Bye!&quot;</span>)<span class="op">;</span></span>
 <span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            <span class="op">*</span><span class="kw">self</span> <span class="op">=</span> <span class="dt">Self</span><span class="pp">::</span>Done<span class="op">;</span></span>
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>            <span class="pp">Poll::</span>Ready(())</span>
@@ -558,6 +573,55 @@ backed by…</p>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="dt">Self</span><span class="pp">::</span>Done <span class="op">=&gt;</span> <span class="pp">panic!</span>(<span class="st">&quot;Contract violation&quot;</span>)<span class="op">,</span></span>
 <span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+</section>
+<section id="quacks-like-iterators" class="slide level2">
+<h2>Quacks like iterators…</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Goal</th>
+<th><code>Future</code></th>
+<th><code>Iterator</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Keep state</td>
+<td>in <code>enum</code></td>
+<td>in <code>struct</code></td>
+</tr>
+<tr class="even">
+<td>Advance…</td>
+<td><code>poll()</code></td>
+<td><code>next()</code></td>
+</tr>
+<tr class="odd">
+<td>…not done</td>
+<td><code>Pending</code></td>
+<td><code>Some(T)</code></td>
+</tr>
+<tr class="even">
+<td>…done</td>
+<td><code>Ready(T)</code></td>
+<td><code>None</code></td>
+</tr>
+<tr class="odd">
+<td>Intermediate results</td>
+<td><strong>Behavior</strong></td>
+<td>Data <code>T</code></td>
+</tr>
+<tr class="even">
+<td>Final result</td>
+<td>Data <code>T</code></td>
+<td>-</td>
+</tr>
+<tr class="odd">
+<td>Driven by</td>
+<td>Caller</td>
+<td>Caller</td>
+</tr>
+</tbody>
+</table>
 </section></section>
 <section id="fewer-context-switches" class="title-slide slide level1">
 <h1>Fewer context switches</h1>
@@ -588,7 +652,7 @@ wrong choice anyway</li>
 <em>exactly</em> as much state as required as they’re <em>stackless</em>
 <ul>
 <li class="fragment">vs. <em>stackful</em> coroutines (e.g. Goroutines ≥
-8 KB)</li>
+2 KB)</li>
 </ul></li>
 <li class="fragment">usual drop semantics</li>
 </ul>
@@ -1181,17 +1245,25 @@ Kołaczkowski</a></p>
 </svg></p>
 </section>
 
+<section>
 <section id="further-reading" class="title-slide slide level1">
 <h1>Further Reading</h1>
 <ul>
-<li class="fragment"><em>Rediscovering the Future</em> workshop from
-Conrad Ludgate at EuroRust 2024</li>
+<li class="fragment"><em>Rediscovering the Future</em> <a href="https://eurorust.eu/2024/workshops/async-rust/">workshop from
+Conrad Ludgate at EuroRust 2024</a></li>
 <li class="fragment"><a href="https://blog.rust-lang.org/2015/04/24/Rust-Once-Run-Everywhere.html">Rust
 Once, Run Everywhere</a></li>
 <li class="fragment"><a href="https://blog.rust-lang.org/2015/05/11/traits.html">Abstraction
 without overhead: traits in Rust</a></li>
+<li class="fragment"><a href="https://jacko.io/async_intro.html">Async
+Rust in Three Parts</a></li>
 <li class="fragment"><a href="https://godbolt.org/z/xWMY6xq8T">FFI
 compilation comparison</a></li>
+</ul>
+</section>
+<section class="slide level2">
+
+<ul>
 <li class="fragment"><a href="https://github.com/jimblandy/context-switch">Comparison of Rust
 async and Linux thread context switch time and memory use</a></li>
 <li class="fragment"><a href="https://github.com/aturon/rfcs/blob/remove-runtime/active/0000-remove-runtime.md">Remove
@@ -1201,7 +1273,7 @@ are coroutines implemented?</a></li>
 <li class="fragment"><a href="https://pkolaczk.github.io/memory-consumption-of-async/">How Much
 Memory Do You Need to Run 1 Million Concurrent Tasks?</a></li>
 </ul>
-</section>
+</section></section>
     </div>
   </div>
 

@@ -11,6 +11,15 @@ theme: dracula
 - been rusting away for ~2 years
 - today, also use Rust at my work at Cloudflare
 
+## Refresher
+
+- Rust provides fundamental types and concepts for async
+- but **no runtime**
+  - C#, Python, JavaScript ship with one
+  - tokio is most popular for Rust
+  - many others exist
+- the _concept_ of async is independent of threading
+
 # Why does async exist?
 
 - Performance!
@@ -102,7 +111,7 @@ fn poll(&mut self) -> Poll<Self::Output> {
             Poll::Pending
         }
         Self::Wait1(sf) => {
-            sf.poll(cx)?; // Check if underlying is ready (fake syntax)
+            sf.poll()?; // Check if underlying is ready (fake syntax)
             println!("Bye!");
             *self = Self::Done;
             Poll::Ready(())
@@ -111,6 +120,18 @@ fn poll(&mut self) -> Poll<Self::Output> {
     }
 }
 ```
+
+## Quacks like iterators...
+
+| Goal                 | `Future`     | `Iterator`  |
+| -------------------- | ------------ | ----------- |
+| Keep state           | in `enum`    | in `struct` |
+| Advance...           | `poll()`     | `next()`    |
+| ...not done          | `Pending`    | `Some(T)`   |
+| ...done              | `Ready(T)`   | `None`      |
+| Intermediate results | **Behavior** | Data `T`    |
+| Final result         | Data `T`     | -           |
+| Driven by            | Caller       | Caller      |
 
 # Fewer context switches
 
@@ -125,7 +146,7 @@ fn poll(&mut self) -> Poll<Self::Output> {
 # Right-sized tasks
 
 - `GreetFutureStateMachine`: *exactly* as much state as required as they're *stackless*
-  - vs. *stackful* coroutines (e.g. Goroutines ≥ 8 KB)
+  - vs. *stackful* coroutines (e.g. Goroutines ≥ 2 KB)
 - usual drop semantics
 
 ---
@@ -152,10 +173,15 @@ Thank you for coming to my Ted talk.
 
 # Further Reading
 
-- _Rediscovering the Future_ workshop from Conrad Ludgate at EuroRust 2024
+- _Rediscovering the Future_ [workshop from Conrad Ludgate at EuroRust
+  2024](https://eurorust.eu/2024/workshops/async-rust/)
 - [Rust Once, Run Everywhere](https://blog.rust-lang.org/2015/04/24/Rust-Once-Run-Everywhere.html)
 - [Abstraction without overhead: traits in Rust](https://blog.rust-lang.org/2015/05/11/traits.html)
+- [Async Rust in Three Parts](https://jacko.io/async_intro.html)
 - [FFI compilation comparison](https://godbolt.org/z/xWMY6xq8T)
+
+---
+
 - [Comparison of Rust async and Linux thread context switch time and memory use](https://github.com/jimblandy/context-switch)
 - [Remove Runtime RFC](https://github.com/aturon/rfcs/blob/remove-runtime/active/0000-remove-runtime.md)
 - [How are coroutines implemented?](https://discuss.python.org/t/how-are-coroutines-implemented/1106/2)
