@@ -633,7 +633,7 @@ backed by…</p>
 <li class="fragment">native threads call <code>read(2)</code> only
 <strong>once</strong>, then block</li>
 <li class="fragment">tasks call <code>read(2)</code> <strong>multiple
-times</strong> (+ <code>epoll(7)</code>)</li>
+times</strong> (<code>EAGAIN</code>, <code>epoll(7)</code>)</li>
 </ul></li>
 <li class="fragment">👉 when I/O bound, context switch advantage
 disappears

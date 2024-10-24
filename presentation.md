@@ -139,7 +139,7 @@ fn poll(&mut self) -> Poll<Self::Output> {
 - "user-space switches between tasks are cheap"
 - ⚠️ except:
   - native threads call `read(2)` only **once**, then block
-  - tasks call `read(2)` **multiple times** (+ `epoll(7)`)
+  - tasks call `read(2)` **multiple times** (`EAGAIN`, `epoll(7)`)
 - 👉 when I/O bound, context switch advantage disappears
   - when not I/O bound, we're CPU bound, where async is wrong choice anyway
 
