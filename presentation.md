@@ -80,8 +80,8 @@ where `await` marks a _suspension point_, which is backed by...
 enum GreetFutureStateMachine { // Compiler-provided
     Init,
     // `println!("Hi!");`
-    Wait1(SleepFut /* `sleep(Duration::from_secs(1))` */),
-    // `println!("Bye!")`;
+    Wait1(SleepFut), // Sleep...
+    // `println!("Bye!");`
     Done,
 }
 ```
@@ -121,17 +121,34 @@ fn poll(&mut self) -> Poll<Self::Output> {
 }
 ```
 
-## Quacks like iterators...
+## 🦆 Quacks like iterators...
 
-| Goal                 | `Future`     | `Iterator`  |
-| -------------------- | ------------ | ----------- |
-| Keep state           | in `enum`    | in `struct` |
-| Advance...           | `poll()`     | `next()`    |
-| ...not done          | `Pending`    | `Some(T)`   |
-| ...done              | `Ready(T)`   | `None`      |
-| Intermediate results | **Behavior** | Data `T`    |
-| Final result         | Data `T`     | -           |
-| Driven by            | Caller       | Caller      |
+| Goal                 | `Future`     | `Iterator`   |
+| -------------------- | ------------ | ------------ |
+| Keep state           | in `enum`    | in `struct`  |
+| Advance...           | `poll()`     | `next()`     |
+| ...not done          | `Pending`    | `Some(T)`    |
+| ...done              | `Ready(T)`   | `None`       |
+| Intermediate results | **Behavior** | Data `T`     |
+| Final result         | Data `T`     | -            |
+| Sugarcoat it         | `async fn`   | `gen fn` (?) |
+
+<!-- | Driving it           | Caller       | Caller       | -->
+
+---
+
+<!-- Source: https://github.com/rust-lang/rust/blob/80d0d927d5069b67cc08c0c65b48e7b6e0cdeeb5/compiler/rustc_ast/src/ast.rs#L2614-L2627 -->
+
+Today, compiler already contains:
+
+```rust
+pub enum CoroutineKind {
+    /// `async`, which returns an `impl Future`.
+    Async { span: Span, closure_id: NodeId, return_impl_trait_id: NodeId },
+    /// `gen`, which returns an `impl Iterator`.
+    Gen { span: Span, closure_id: NodeId, return_impl_trait_id: NodeId },
+}
+```
 
 # Fewer context switches
 
@@ -193,3 +210,5 @@ Thank you for coming to my Ted talk.
 - [Generators with UnpinCell](https://without.boats/blog/generators-with-unpin-cell/)
 - [How Rust optimizes async/await I](https://tmandry.gitlab.io/blog/posts/optimizing-await-1/)
 - [Why choose async/await over threads?](https://notgull.net/why-not-threads/)
+- [`CoroutineKind`](https://github.com/rust-lang/rust/blob/80d0d927d5069b67cc08c0c65b48e7b6e0cdeeb5/compiler/rustc_ast/src/ast.rs#L2614-L2627)
+- [Add support for `gen fn`](https://github.com/rust-lang/rust/pull/118457)

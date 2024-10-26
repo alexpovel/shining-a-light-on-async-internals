@@ -539,8 +539,8 @@ backed by…</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> GreetFutureStateMachine <span class="op">{</span> <span class="co">// Compiler-provided</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    Init<span class="op">,</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">// `println!(&quot;Hi!&quot;);`</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    Wait1(SleepFut <span class="co">/* `sleep(Duration::from_secs(1))` */</span>)<span class="op">,</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// `println!(&quot;Bye!&quot;)`;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    Wait1(SleepFut)<span class="op">,</span> <span class="co">// Sleep...</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">// `println!(&quot;Bye!&quot;);`</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    Done<span class="op">,</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>which can be driven forward by <code>poll</code>ing…</p>
@@ -575,7 +575,7 @@ backed by…</p>
 <span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </section>
 <section id="quacks-like-iterators" class="slide level2">
-<h2>Quacks like iterators…</h2>
+<h2>🦆 Quacks like iterators…</h2>
 <table>
 <thead>
 <tr class="header">
@@ -616,12 +616,24 @@ backed by…</p>
 <td>-</td>
 </tr>
 <tr class="odd">
-<td>Driven by</td>
-<td>Caller</td>
-<td>Caller</td>
+<td>Sugarcoat it</td>
+<td><code>async fn</code></td>
+<td><code>gen fn</code> (?)</td>
 </tr>
 </tbody>
 </table>
+<!-- | Driving it           | Caller       | Caller       | -->
+</section>
+<section class="slide level2">
+
+<!-- Source: https://github.com/rust-lang/rust/blob/80d0d927d5069b67cc08c0c65b48e7b6e0cdeeb5/compiler/rustc_ast/src/ast.rs#L2614-L2627 -->
+<p>Today, compiler already contains:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">enum</span> CoroutineKind <span class="op">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">/// `async`, which returns an `impl Future`.</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    Async <span class="op">{</span> span<span class="op">:</span> Span<span class="op">,</span> closure_id<span class="op">:</span> NodeId<span class="op">,</span> return_impl_trait_id<span class="op">:</span> NodeId <span class="op">},</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">/// `gen`, which returns an `impl Iterator`.</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    Gen <span class="op">{</span> span<span class="op">:</span> Span<span class="op">,</span> closure_id<span class="op">:</span> NodeId<span class="op">,</span> return_impl_trait_id<span class="op">:</span> NodeId <span class="op">},</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </section></section>
 <section id="fewer-context-switches" class="title-slide slide level1">
 <h1>Fewer context switches</h1>
@@ -1288,6 +1300,9 @@ with UnpinCell</a></li>
 optimizes async/await I</a></li>
 <li class="fragment"><a href="https://notgull.net/why-not-threads/">Why
 choose async/await over threads?</a></li>
+<li class="fragment"><a href="https://github.com/rust-lang/rust/blob/80d0d927d5069b67cc08c0c65b48e7b6e0cdeeb5/compiler/rustc_ast/src/ast.rs#L2614-L2627"><code>CoroutineKind</code></a></li>
+<li class="fragment"><a href="https://github.com/rust-lang/rust/pull/118457">Add support for
+<code>gen fn</code></a></li>
 </ul>
 </section></section>
     </div>
