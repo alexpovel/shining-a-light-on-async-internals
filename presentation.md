@@ -173,16 +173,23 @@ Thank you for coming to my Ted talk.
 
 # Further Reading
 
-- _Rediscovering the Future_ [workshop from Conrad Ludgate at EuroRust
-  2024](https://eurorust.eu/2024/workshops/async-rust/)
+- _Rediscovering the Future_ [workshop from Conrad Ludgate at EuroRust 2024](https://eurorust.eu/2024/workshops/async-rust/)
+- [Asynchronous Programming in Rust: Learn asynchronous programming by building working examples of futures, green threads, and runtimes](https://www.packtpub.com/en-de/product/asynchronous-programming-in-rust-9781805128137?type=print)
 - [Rust Once, Run Everywhere](https://blog.rust-lang.org/2015/04/24/Rust-Once-Run-Everywhere.html)
 - [Abstraction without overhead: traits in Rust](https://blog.rust-lang.org/2015/05/11/traits.html)
 - [Async Rust in Three Parts](https://jacko.io/async_intro.html)
-- [FFI compilation comparison](https://godbolt.org/z/xWMY6xq8T)
 
 ---
 
+- [FFI compilation comparison](https://godbolt.org/z/xWMY6xq8T)
 - [Comparison of Rust async and Linux thread context switch time and memory use](https://github.com/jimblandy/context-switch)
 - [Remove Runtime RFC](https://github.com/aturon/rfcs/blob/remove-runtime/active/0000-remove-runtime.md)
 - [How are coroutines implemented?](https://discuss.python.org/t/how-are-coroutines-implemented/1106/2)
 - [How Much Memory Do You Need to Run 1 Million Concurrent Tasks?](https://pkolaczk.github.io/memory-consumption-of-async/)
+
+---
+
+- [Zero-cost futures in Rust](https://aturon.github.io/blog/2016/08/11/futures/)
+- [Generators with UnpinCell](https://without.boats/blog/generators-with-unpin-cell/)
+- [How Rust optimizes async/await I](https://tmandry.gitlab.io/blog/posts/optimizing-await-1/)
+- [Why choose async/await over threads?](https://notgull.net/why-not-threads/)
