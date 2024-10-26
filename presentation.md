@@ -11,46 +11,51 @@ theme: dracula
 - been rusting away for ~2 years
 - today, also use Rust at my work at Cloudflare
 
-## Refresher
+## Refresher: state of async
 
-- Rust provides fundamental types and concepts for async
-- but **no runtime**
+- types and concepts for async provided
+- but **no runtime**:
   - C#, Python, JavaScript ship with one
-  - tokio is most popular for Rust
+  - tokio is popular
   - many others exist
-- the _concept_ of async is independent of threading
+- async ≠ threading
 
 # Why does async exist?
 
+---
+
 - Performance!
-  1. **right-sized tasks**: less memory consumption
-  2. **cheaper context switches**: tasks cheaper than threads
-  3. **zero-cost abstractions**: FFI-friendly + state machines
-<!-- - Efficient waiting -->
 
-## Zero-cost abstractions
+  🤏 right-sized tasks
 
-- Rust favors abstractions at no _additional_ costs
-- including FFI:
+  ⌛️ cheap context switches
 
-    ```rust
-    fn main() {
-        unsafe { libc::puts("Hello\0".as_ptr() as *const i8) };
-    }
-    ```
-- which precludes green threads: cannot afford runtime
-  - cf. Cgo with its C-incompatible stack
+  🔮 zero-cost abstractions
+- Efficient waiting
+
+## Zero-cost abstractions demanded
+
+  ```rust
+  fn main() {
+      unsafe { libc::puts("Hello\0".as_ptr() as *const i8) };
+  }
+  ```
+
+<p class="fragment">
+no runtime → no green threads (cf. Cgo)
+</p>
 
 ## How do we do I/O then?
 
 - ~~green threads~~
 - native threads
   - mostly fine, but "limited" scaling
-- coroutines (`yield` keyword)
-  - take turns when blocked
-  - keep state in between suspensions
+- coroutines
+  - `yield`
+  - suspend when blocked
+  - keep state between suspensions
 
-## State machines
+## coroutines = async = state machines
 
 ```rust
 async fn greet() {
@@ -86,9 +91,9 @@ enum GreetFutureStateMachine { // Compiler-provided
 }
 ```
 
-which can be driven forward by `poll`ing...
-
 ---
+
+which can be driven forward by `poll`ing...
 
 ```rust
 impl Future for GreetFutureStateMachine { // Compiler-provided
@@ -121,7 +126,7 @@ fn poll(&mut self) -> Poll<Self::Output> {
 }
 ```
 
-## 🦆 Quacks like iterators...
+## async & iterators: many parallels
 
 | Goal                 | `Future`     | `Iterator`   |
 | -------------------- | ------------ | ------------ |
@@ -150,35 +155,32 @@ pub enum CoroutineKind {
 }
 ```
 
-# Fewer context switches
+# Cheap context switches
 
-- "native thread context switches are expensive"
-- "user-space switches between tasks are cheap"
-- ⚠️ except:
-  - native threads call `read(2)` only **once**, then block
-  - tasks call `read(2)` **multiple times** (`EAGAIN`, `epoll(7)`)
-- 👉 when I/O bound, context switch advantage disappears
-  - when not I/O bound, we're CPU bound, where async is wrong choice anyway
+- "thread context switching is expensive"
+- "switching between tasks is cheap"
+- yes, but...
+  - OS threads call `read(2)` **once**
+  - tasks call `read(2)` **more than once**
+    - `EAGAIN`, `epoll(7)`
+- I/O bound? Context switch advantage disappears
+  - not I/O bound? → CPU bound → async wrong
 
 # Right-sized tasks
 
-- `GreetFutureStateMachine`: *exactly* as much state as required as they're *stackless*
-  - vs. *stackful* coroutines (e.g. Goroutines ≥ 2 KB)
-- usual drop semantics
+<img src="./static/stack-comparison.svg" width="800" height="600">
 
----
-
-Spawning 1 million tasks (sleep 10)
+## 1 million concurrent tasks: easy!
 
 ![](./static/piotr-kołaczkowski-memory-consumption-of-async.png)
 
 Copyright [Piotr Kołaczkowski](https://pkolaczk.github.io/memory-consumption-of-async/)
 
-# Summary
+# Conclusion
 
 1. Right-sized tasks: ✅
 2. Cheaper context switches: 🤷‍♀️
-3. Zero-cost FFI: 💡
+3. Zero-cost abstractions: 💡
 
 # Thanks!
 

@@ -1,7 +1,7 @@
 # Setting the `revealjs-url` variable to the local checkout speeds things up. Otherwise,
 # pandoc will fetch from remote on every compile. In my case that was from `unpkg.com`,
 # which rate-limited me after a while.
-%.html: %.md custom.html
+%.html: %.md custom.html $(wildcard static/*)
 	@echo "Converting $< to $@..."
 	git submodule update --init --recursive
 	pandoc \
@@ -19,7 +19,7 @@
 .PHONY: watch
 watch:
 	@echo "Watching for changes..."
-	@cargo watch --watch presentation.md --shell "make presentation.html"
+	@cargo watch --watch presentation.md --watch custom.html --watch static/ --shell "make presentation.html"
 
 static/qrcode.svg:
 	@echo "Generating QR code..."
