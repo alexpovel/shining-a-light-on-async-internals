@@ -22,16 +22,14 @@ theme: dracula
 
 # Why does async exist?
 
----
+## Agenda
 
 - Performance!
-
-  🤏 right-sized tasks
-
-  ⌛️ cheap context switches
-
-  🔮 zero-cost abstractions
-- Efficient waiting
+  1. 🤏 right-sized tasks
+  2. ⌛️ cheap context switches
+  3. <span class="fragment highlight-red">
+      🔮 zero-cost abstractions
+     </span>
 
 ## Zero-cost abstractions demanded
 
@@ -157,6 +155,18 @@ pub enum CoroutineKind {
 
 # Cheap context switches
 
+- Performance!
+
+  🤏 right-sized tasks
+
+  <span class="fragment highlight-red">
+    ⌛️ cheap context switches
+  </span>
+
+  ~~🔮 zero-cost abstractions~~
+
+---
+
 - "thread context switching is expensive"
 - "switching between tasks is cheap"
 - yes, but...
@@ -167,6 +177,18 @@ pub enum CoroutineKind {
   - not I/O bound? → CPU bound → async wrong
 
 # Right-sized tasks
+
+- Performance!
+
+  <span class="fragment highlight-red">
+    🤏 right-sized tasks
+  </span>
+
+  ~~⌛️ cheap context switches~~
+
+  ~~🔮 zero-cost abstractions~~
+
+---
 
 <img src="./static/stack-comparison.svg" width="800" height="600">
 

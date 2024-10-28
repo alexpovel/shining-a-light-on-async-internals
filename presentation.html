@@ -435,7 +435,6 @@ font-size: 200%;
 .level2 h2 {
 font-size: 150%;
 }
-
 </style>
 </head>
 <body>
@@ -475,14 +474,16 @@ font-size: 150%;
 <h1>Why does async exist?</h1>
 
 </section>
-<section class="slide level2">
-
+<section id="agenda" class="slide level2">
+<h2>Agenda</h2>
 <ul>
-<li class="fragment"><p>Performance!</p>
-<p>🤏 right-sized tasks</p>
-<p>⌛️ cheap context switches</p>
-<p>🔮 zero-cost abstractions</p></li>
-<li class="fragment"><p>Efficient waiting</p></li>
+<li class="fragment">Performance!
+<ol type="1">
+<li class="fragment">🤏 right-sized tasks</li>
+<li class="fragment">⌛️ cheap context switches</li>
+<li class="fragment"><span class="fragment highlight-red"> 🔮 zero-cost
+abstractions </span></li>
+</ol></li>
 </ul>
 </section>
 <section id="zero-cost-abstractions-demanded" class="slide level2">
@@ -630,8 +631,19 @@ backed by…</p>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    Gen <span class="op">{</span> span<span class="op">:</span> Span<span class="op">,</span> closure_id<span class="op">:</span> NodeId<span class="op">,</span> return_impl_trait_id<span class="op">:</span> NodeId <span class="op">},</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </section></section>
+<section>
 <section id="cheap-context-switches" class="title-slide slide level1">
 <h1>Cheap context switches</h1>
+<ul>
+<li class="fragment"><p>Performance!</p>
+<p>🤏 right-sized tasks</p>
+<p><span class="fragment highlight-red"> ⌛️ cheap context switches
+</span></p>
+<p><del>🔮 zero-cost abstractions</del></p></li>
+</ul>
+</section>
+<section class="slide level2">
+
 <ul>
 <li class="fragment">“thread context switching is expensive”</li>
 <li class="fragment">“switching between tasks is cheap”</li>
@@ -650,11 +662,20 @@ once</strong>
 <li class="fragment">not I/O bound? → CPU bound → async wrong</li>
 </ul></li>
 </ul>
-</section>
-
+</section></section>
 <section>
 <section id="right-sized-tasks" class="title-slide slide level1">
 <h1>Right-sized tasks</h1>
+<ul>
+<li class="fragment"><p>Performance!</p>
+<p><span class="fragment highlight-red"> 🤏 right-sized tasks
+</span></p>
+<p><del>⌛️ cheap context switches</del></p>
+<p><del>🔮 zero-cost abstractions</del></p></li>
+</ul>
+</section>
+<section class="slide level2">
+
 <p><svg id="svg19" width="800" height="600" viewBox="0 0 524.60241 283.98514" sodipodi:docname="stack-comparison.svg" inkscape:version="1.3.2 (091e20ef0f, 2023-11-25)" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg">
   <defs id="svg19_defs19">
     <rect x="466.44525" y="31.881115" width="71.119408" height="39.238297" id="svg19_rect22" />
